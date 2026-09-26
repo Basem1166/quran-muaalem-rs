@@ -3,6 +3,12 @@
 version = 4
 
 [[package]]
+name = "constcat"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4938185353434999ef52c81753c8cca8955ed38042fc29913db3751916f3b7ab"
+
+[[package]]
 name = "itoa"
 version = "1.0.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -52,6 +58,7 @@ version = "0.1.0"
 name = "quran-muaalem-transcript"
 version = "0.1.0"
 dependencies = [
+ "constcat",
  "serde",
  "serde_json",
 ]

@@ -1,5 +1,5 @@
 use std::{
-    collections::{BTreeMap, BTreeSet},
+    collections::{HashMap, HashSet},
     sync::LazyLock,
 };
 
@@ -7,6 +7,7 @@ use serde::Deserialize;
 
 /// The Imlaey alphabet data used by the transcript engine.
 #[derive(Debug, Deserialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
 pub struct ImlaeyAlphabet {
     pub alphabet: String,
     pub hamazat: String,
@@ -23,10 +24,11 @@ pub struct ImlaeyAlphabet {
 
 /// A special Uthmani-script pattern and its replacement options.
 #[derive(Debug, Deserialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
 pub struct SpecialPattern {
     pub pattern: String,
     pub attr_name: Option<String>,
-    pub opts: Option<BTreeMap<String, String>>,
+    pub opts: Option<HashMap<String, String>>,
     pub target_pattern: Option<String>,
     pub pos: PatternPosition,
 }
@@ -40,15 +42,103 @@ pub enum PatternPosition {
     End,
 }
 
-/// Structured Uthmani data that is not represented as a simple character constant.
+/// The Uthmani alphabet exactly as stored in `quran-alphabet.json`.
+///
+/// Mirrors the Python `UthmaniAlphabet` dataclass: single characters first,
+/// then the disassembled `hrof` map, `special_patterns`, and finally the
+/// derived tanween and group strings also stored in the JSON.
 #[derive(Debug, Deserialize, PartialEq, Eq)]
-pub struct UthmaniStructuredData {
-    pub hrof_moqtaa_disassemble: BTreeMap<String, String>,
+#[serde(deny_unknown_fields)]
+pub struct UthmaniAlphabet {
+    pub alif: String,
+    pub alif_maksora: String,
+    pub baa: String,
+    pub taa_mabsoota: String,
+    pub taa_marboota: String,
+    pub thaa: String,
+    pub jeem: String,
+    pub haa_mohmala: String,
+    pub khaa: String,
+    pub daal: String,
+    pub thaal: String,
+    pub raa: String,
+    pub zay: String,
+    pub seen: String,
+    pub sheen: String,
+    pub saad: String,
+    pub daad: String,
+    pub taa_mofakhama: String,
+    pub zaa_mofakhama: String,
+    pub ayn: String,
+    pub ghyn: String,
+    pub faa: String,
+    pub qaf: String,
+    pub kaf: String,
+    pub lam: String,
+    pub meem: String,
+    pub noon: String,
+    pub haa: String,
+    pub waw: String,
+    pub yaa: String,
+    pub hamza: String,
+    pub hamza_above_alif: String,
+    pub hamza_below_alif: String,
+    pub hamza_above_waw: String,
+    pub hamza_above_yaa: String,
+    pub hamza_mamdoda: String,
+    pub tanween_fath: String,
+    pub tanween_dam: String,
+    pub tanween_kasr: String,
+    pub fatha: String,
+    pub dama: String,
+    pub kasra: String,
+    pub shadda: String,
+    pub ras_haaa: String,
+    pub madd: String,
+    pub hamzat_wasl: String,
+    pub alif_khnjaria: String,
+    pub small_seen_above: String,
+    pub small_seen_below: String,
+    pub small_waw: String,
+    pub small_yaa_sila: String,
+    pub small_yaa: String,
+    pub small_noon: String,
+    pub skoon_mostadeer: String,
+    pub skoon_mostateel: String,
+    pub meem_iqlab: String,
+    pub imala_sign: String,
+    pub ishmam_sign: String,
+    pub tasheel_sign: String,
+    pub tanween_idhaam_dterminer: String,
+    pub kasheeda: String,
+    pub space: String,
+    pub hrof_moqtaa_disassemble: HashMap<String, String>,
     pub special_patterns: Vec<SpecialPattern>,
+    pub tanween_fath_mothhar: String,
+    pub tanween_dam_mothhar: String,
+    pub tanween_kasr_mothhar: String,
+    pub tanween_fath_modgham: String,
+    pub tanween_dam_modgham: String,
+    pub tanween_kasr_modgham: String,
+    pub tanween_fath_iqlab: String,
+    pub tanween_dam_iqlab: String,
+    pub tanween_kasr_iqlab: String,
+    pub madd_alif: String,
+    pub madd_waw: String,
+    pub madd_yaa: String,
+    pub noon_ikhfaa_group: String,
+    pub noon_idgham_group: String,
+    pub harakat_group: String,
+    pub hamazat_group: String,
+    pub letters_group: String,
+    pub pure_letters_group: String,
+    pub pure_letters_without_yaa_and_waw_group: String,
+    pub qlqla_group: String,
 }
 
 /// One exceptional Uthmani-to-Imlaey spelling pair.
 #[derive(Debug, Deserialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
 pub struct RasmPair {
     pub uthmani: String,
     pub imlaey: String,
@@ -56,6 +146,7 @@ pub struct RasmPair {
 
 /// Exceptional word mappings and the Imlaey prefixes that activate them.
 #[derive(Debug, Deserialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
 pub struct UniqueRasmMap {
     pub rasm_map: Vec<RasmPair>,
     pub imlaey_starts: Vec<String>,
@@ -63,6 +154,7 @@ pub struct UniqueRasmMap {
 
 /// The isti'aatha phrase in both supported scripts.
 #[derive(Debug, Deserialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
 pub struct Istiaatha {
     pub imlaey: String,
     pub uthmani: String,
@@ -70,6 +162,7 @@ pub struct Istiaatha {
 
 /// The sadaqa phrase in both supported scripts.
 #[derive(Debug, Deserialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
 pub struct Sadaka {
     pub imlaey: String,
     pub uthmani: String,
@@ -77,18 +170,20 @@ pub struct Sadaka {
 
 /// Word sets used when deciding how an initial hamzat wasl is pronounced.
 #[derive(Debug, Deserialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
 pub struct BeginHamzatWasl {
-    pub verbs_nouns_inter: BTreeSet<String>,
-    pub verbs: BTreeSet<String>,
-    pub damma_aarida_verbs: BTreeSet<String>,
-    pub nouns: BTreeSet<String>,
+    pub verbs_nouns_inter: HashSet<String>,
+    pub verbs: HashSet<String>,
+    pub damma_aarida_verbs: HashSet<String>,
+    pub nouns: HashSet<String>,
 }
 
 /// Parsed data from the embedded Quran alphabet JSON file.
 #[derive(Debug, Deserialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
 pub struct QuranAlphabet {
     pub imlaey: ImlaeyAlphabet,
-    pub uthmani: UthmaniStructuredData,
+    pub uthmani: UthmaniAlphabet,
     pub unique_rasm_map: UniqueRasmMap,
     pub istiaatha: Istiaatha,
     pub sadaka: Sadaka,
@@ -124,356 +219,562 @@ pub fn begin_hamzat_wasl() -> &'static BeginHamzatWasl {
 pub mod imlaey {
     pub const ALPHABET: &str = "ءآأؤإئابةتثجحخدذرزسشصضطظعغفقكلمنهوىيًٌٍَُِّْٰ";
     pub const HAMAZAT: &str = "ءآأؤإئ";
-    pub const HAMZA: char = 'ء';
-    pub const ALEF: char = 'ا';
-    pub const ALEF_MAKSOORA: char = 'ى';
-    pub const TAA_MARBOOTA: char = 'ة';
-    pub const TAA_MABSOOTA: char = 'ت';
-    pub const HAA: char = 'ه';
-    pub const SMALL_ALEF: char = 'ٰ';
+    pub const HAMZA: &str = "ء";
+    pub const ALEF: &str = "ا";
+    pub const ALEF_MAKSOORA: &str = "ى";
+    pub const TAA_MARBOOTA: &str = "ة";
+    pub const TAA_MABSOOTA: &str = "ت";
+    pub const HAA: &str = "ه";
+    pub const SMALL_ALEF: &str = "ٰ";
     pub const TASHKEEL: &str = "ًٌٍَُِّْ";
-    pub const SKOON: char = 'ْ';
+    pub const SKOON: &str = "ْ";
 }
 
 /// Uthmani-script characters used by the Quran transcript engine.
+///
+/// Single characters are `&str` constants so derived groups can reuse them
+/// with `constcat::concat!`, mirroring the Python `UthmaniAlphabet`
+/// `__post_init__` concatenations (`self.fatha + self.alif`, ...).
 pub mod uthmani {
     /// A normal space character.
-    pub const SPACE: char = ' ';
-
+    pub const SPACE: &str = " ";
     /// Arabic letter alif: ا
-    pub const ALIF: char = 'ا';
-
+    pub const ALIF: &str = "ا";
     /// Arabic letter alif maksora: ى
-    pub const ALIF_MAKSORA: char = 'ى';
-
+    pub const ALIF_MAKSORA: &str = "ى";
     /// Basic Uthmani Arabic letters.
-    pub const BAA: char = 'ب';
-    pub const TAA_MABSOOTA: char = 'ت';
-    pub const TAA_MARBOOTA: char = 'ة';
-    pub const THAA: char = 'ث';
-    pub const JEEM: char = 'ج';
-    pub const HAA_MOHMALA: char = 'ح';
-    pub const KHAA: char = 'خ';
-    pub const DAAL: char = 'د';
-    pub const THAAL: char = 'ذ';
-    pub const RAA: char = 'ر';
-    pub const ZAY: char = 'ز';
-    pub const SEEN: char = 'س';
-    pub const SHEEN: char = 'ش';
-    pub const SAAD: char = 'ص';
-    pub const DAAD: char = 'ض';
-    pub const TAA_MOFAKHAMA: char = 'ط';
-    pub const ZAA_MOFAKHAMA: char = 'ظ';
-    pub const AYN: char = 'ع';
-    pub const GHYN: char = 'غ';
-    pub const FAA: char = 'ف';
-    pub const QAF: char = 'ق';
-    pub const KAF: char = 'ك';
-    pub const LAM: char = 'ل';
-    pub const MEEM: char = 'م';
-    pub const NOON: char = 'ن';
-    pub const HAA: char = 'ه';
-    pub const WAW: char = 'و';
-    pub const YAA: char = 'ي';
-
+    pub const BAA: &str = "ب";
+    pub const TAA_MABSOOTA: &str = "ت";
+    pub const TAA_MARBOOTA: &str = "ة";
+    pub const THAA: &str = "ث";
+    pub const JEEM: &str = "ج";
+    pub const HAA_MOHMALA: &str = "ح";
+    pub const KHAA: &str = "خ";
+    pub const DAAL: &str = "د";
+    pub const THAAL: &str = "ذ";
+    pub const RAA: &str = "ر";
+    pub const ZAY: &str = "ز";
+    pub const SEEN: &str = "س";
+    pub const SHEEN: &str = "ش";
+    pub const SAAD: &str = "ص";
+    pub const DAAD: &str = "ض";
+    pub const TAA_MOFAKHAMA: &str = "ط";
+    pub const ZAA_MOFAKHAMA: &str = "ظ";
+    pub const AYN: &str = "ع";
+    pub const GHYN: &str = "غ";
+    pub const FAA: &str = "ف";
+    pub const QAF: &str = "ق";
+    pub const KAF: &str = "ك";
+    pub const LAM: &str = "ل";
+    pub const MEEM: &str = "م";
+    pub const NOON: &str = "ن";
+    pub const HAA: &str = "ه";
+    pub const WAW: &str = "و";
+    pub const YAA: &str = "ي";
     /// Hamza forms used in Uthmani script.
-    pub const HAMZA: char = 'ء';
-    pub const HAMZA_ABOVE_ALIF: char = 'أ';
-    pub const HAMZA_BELOW_ALIF: char = 'إ';
-    pub const HAMZA_ABOVE_WAW: char = 'ؤ';
-    pub const HAMZA_ABOVE_YAA: char = 'ئ';
-    pub const HAMZA_MAMDODA: char = 'ٔ';
-
+    pub const HAMZA: &str = "ء";
+    pub const HAMZA_ABOVE_ALIF: &str = "أ";
+    pub const HAMZA_BELOW_ALIF: &str = "إ";
+    pub const HAMZA_ABOVE_WAW: &str = "ؤ";
+    pub const HAMZA_ABOVE_YAA: &str = "ئ";
+    pub const HAMZA_MAMDODA: &str = "ٔ";
     /// Arabic vowel marks and tanween marks.
-    pub const TANWEEN_FATH: char = 'ً';
-    pub const TANWEEN_DAM: char = 'ٌ';
-    pub const TANWEEN_KASR: char = 'ٍ';
-    pub const FATHA: char = 'َ';
-    pub const DAMA: char = 'ُ';
-    pub const KASRA: char = 'ِ';
-
+    pub const TANWEEN_FATH: &str = "ً";
+    pub const TANWEEN_DAM: &str = "ٌ";
+    pub const TANWEEN_KASR: &str = "ٍ";
+    pub const FATHA: &str = "َ";
+    pub const DAMA: &str = "ُ";
+    pub const KASRA: &str = "ِ";
     /// Arabic shadda diacritic: ّ
-    pub const SHADDA: char = 'ّ';
-
+    pub const SHADDA: &str = "ّ";
     /// Other Uthmani diacritics and Quranic marks.
-    pub const RAS_HAAA: char = 'ْ';
-    pub const MADD: char = 'ٓ';
-    pub const HAMZAT_WASL: char = 'ٱ';
-    pub const ALIF_KHNJARIA: char = 'ٰ';
-    pub const SKOON_MOSTADEER: char = '۟';
-    pub const SKOON_MOSTATEEL: char = '۠';
-    pub const MEEM_IQLAB: char = 'ۢ';
-    pub const IMALA_SIGN: char = '۪';
-    pub const ISHMAM_SIGN: char = '۫';
-    pub const TASHEEL_SIGN: char = '۬';
-    pub const TANWEEN_IDHAAM_DTERMINER: char = 'ۭ';
-    pub const KASHEEDA: char = 'ـ';
-
+    pub const RAS_HAAA: &str = "ْ";
+    pub const MADD: &str = "ٓ";
+    pub const HAMZAT_WASL: &str = "ٱ";
+    pub const ALIF_KHNJARIA: &str = "ٰ";
+    pub const SKOON_MOSTADEER: &str = "۟";
+    pub const SKOON_MOSTATEEL: &str = "۠";
+    pub const MEEM_IQLAB: &str = "ۢ";
+    pub const IMALA_SIGN: &str = "۪";
+    pub const ISHMAM_SIGN: &str = "۫";
+    pub const TASHEEL_SIGN: &str = "۬";
+    pub const TANWEEN_IDHAAM_DTERMINER: &str = "ۭ";
+    pub const KASHEEDA: &str = "ـ";
     /// Small Uthmani letters and marks.
-    pub const SMALL_SEEN_ABOVE: char = 'ۜ';
-    pub const SMALL_SEEN_BELOW: char = 'ۣ';
-    pub const SMALL_WAW: char = 'ۥ';
-    pub const SMALL_YAA_SILA: char = 'ۦ';
-    pub const SMALL_YAA: char = 'ۧ';
-    pub const SMALL_NOON: char = 'ۨ';
+    pub const SMALL_SEEN_ABOVE: &str = "ۜ";
+    pub const SMALL_SEEN_BELOW: &str = "ۣ";
+    pub const SMALL_WAW: &str = "ۥ";
+    pub const SMALL_YAA_SILA: &str = "ۦ";
+    pub const SMALL_YAA: &str = "ۧ";
+    pub const SMALL_NOON: &str = "ۨ";
 
-    /// Derived letter and diacritic groups from the original Python alphabet.
-    pub const MADD_ALIF: &str = "َا";
-    pub const MADD_WAW: &str = "ُو";
-    pub const MADD_YAA: &str = "ِي";
-    pub const NOON_IKHFAA_GROUP: &str = "صذثكجشقسدطزفتضظ";
-    pub const NOON_IDGHAM_GROUP: &str = "يرملون";
-    pub const HARAKAT_GROUP: &str = "َُِ";
-    pub const HAMAZAT_GROUP: &str = "ءأإؤئٔ";
-    pub const LETTERS_GROUP: &str = "اىبتةثجحخدذرزسشصضطظعغفقكلمنهويء";
-    pub const PURE_LETTERS_GROUP: &str = "بتثجحخدذرزسشصضطظعغفقكلمنهويء";
-    pub const PURE_LETTERS_WITHOUT_YAA_AND_WAW_GROUP: &str = "بتثجحخدذرزسشصضطظعغفقكلمنهء";
-    pub const QLQLA_GROUP: &str = "قطبجد";
+    /// Derived groups mirroring Python `__post_init__` (`self.fatha + self.alif`, ...).
+    pub const MADD_ALIF: &str = constcat::concat!(FATHA, ALIF);
+    pub const MADD_WAW: &str = constcat::concat!(DAMA, WAW);
+    pub const MADD_YAA: &str = constcat::concat!(KASRA, YAA);
+    pub const NOON_IKHFAA_GROUP: &str = constcat::concat!(
+        SAAD,
+        THAAL,
+        THAA,
+        KAF,
+        JEEM,
+        SHEEN,
+        QAF,
+        SEEN,
+        DAAL,
+        TAA_MOFAKHAMA,
+        ZAY,
+        FAA,
+        TAA_MABSOOTA,
+        DAAD,
+        ZAA_MOFAKHAMA
+    );
+    pub const NOON_IDGHAM_GROUP: &str = constcat::concat!(YAA, RAA, MEEM, LAM, WAW, NOON);
+    pub const HARAKAT_GROUP: &str = constcat::concat!(FATHA, DAMA, KASRA);
+    pub const HAMAZAT_GROUP: &str = constcat::concat!(
+        HAMZA,
+        HAMZA_ABOVE_ALIF,
+        HAMZA_BELOW_ALIF,
+        HAMZA_ABOVE_WAW,
+        HAMZA_ABOVE_YAA,
+        HAMZA_MAMDODA
+    );
+    pub const LETTERS_GROUP: &str = constcat::concat!(
+        ALIF,
+        ALIF_MAKSORA,
+        BAA,
+        TAA_MABSOOTA,
+        TAA_MARBOOTA,
+        THAA,
+        JEEM,
+        HAA_MOHMALA,
+        KHAA,
+        DAAL,
+        THAAL,
+        RAA,
+        ZAY,
+        SEEN,
+        SHEEN,
+        SAAD,
+        DAAD,
+        TAA_MOFAKHAMA,
+        ZAA_MOFAKHAMA,
+        AYN,
+        GHYN,
+        FAA,
+        QAF,
+        KAF,
+        LAM,
+        MEEM,
+        NOON,
+        HAA,
+        WAW,
+        YAA,
+        HAMZA
+    );
+    pub const PURE_LETTERS_GROUP: &str = constcat::concat!(
+        BAA,
+        TAA_MABSOOTA,
+        THAA,
+        JEEM,
+        HAA_MOHMALA,
+        KHAA,
+        DAAL,
+        THAAL,
+        RAA,
+        ZAY,
+        SEEN,
+        SHEEN,
+        SAAD,
+        DAAD,
+        TAA_MOFAKHAMA,
+        ZAA_MOFAKHAMA,
+        AYN,
+        GHYN,
+        FAA,
+        QAF,
+        KAF,
+        LAM,
+        MEEM,
+        NOON,
+        HAA,
+        WAW,
+        YAA,
+        HAMZA
+    );
+    pub const PURE_LETTERS_WITHOUT_YAA_AND_WAW_GROUP: &str = constcat::concat!(
+        BAA,
+        TAA_MABSOOTA,
+        THAA,
+        JEEM,
+        HAA_MOHMALA,
+        KHAA,
+        DAAL,
+        THAAL,
+        RAA,
+        ZAY,
+        SEEN,
+        SHEEN,
+        SAAD,
+        DAAD,
+        TAA_MOFAKHAMA,
+        ZAA_MOFAKHAMA,
+        AYN,
+        GHYN,
+        FAA,
+        QAF,
+        KAF,
+        LAM,
+        MEEM,
+        NOON,
+        HAA,
+        HAMZA
+    );
+    pub const QLQLA_GROUP: &str = constcat::concat!(QAF, TAA_MOFAKHAMA, BAA, JEEM, DAAL);
 
     /// Tanween variants used by tajweed rules.
-    pub const TANWEEN_FATH_MOTHHAR: &str = "ً";
-    pub const TANWEEN_DAM_MOTHHAR: &str = "ٌ";
-    pub const TANWEEN_KASR_MOTHHAR: &str = "ٍ";
-    pub const TANWEEN_FATH_MODGHAM: &str = "ًۭ";
-    pub const TANWEEN_DAM_MODGHAM: &str = "ٌۭ";
-    pub const TANWEEN_KASR_MODGHAM: &str = "ٍۭ";
-    pub const TANWEEN_FATH_IQLAB: &str = "ًۢ";
-    pub const TANWEEN_DAM_IQLAB: &str = "ٌۢ";
-    pub const TANWEEN_KASR_IQLAB: &str = "ٍۢ";
+    pub const TANWEEN_FATH_MOTHHAR: &str = TANWEEN_FATH;
+    pub const TANWEEN_DAM_MOTHHAR: &str = TANWEEN_DAM;
+    pub const TANWEEN_KASR_MOTHHAR: &str = TANWEEN_KASR;
+    pub const TANWEEN_FATH_MODGHAM: &str =
+        constcat::concat!(TANWEEN_FATH, TANWEEN_IDHAAM_DTERMINER);
+    pub const TANWEEN_DAM_MODGHAM: &str = constcat::concat!(TANWEEN_DAM, TANWEEN_IDHAAM_DTERMINER);
+    pub const TANWEEN_KASR_MODGHAM: &str =
+        constcat::concat!(TANWEEN_KASR, TANWEEN_IDHAAM_DTERMINER);
+    pub const TANWEEN_FATH_IQLAB: &str = constcat::concat!(TANWEEN_FATH, MEEM_IQLAB);
+    pub const TANWEEN_DAM_IQLAB: &str = constcat::concat!(TANWEEN_DAM, MEEM_IQLAB);
+    pub const TANWEEN_KASR_IQLAB: &str = constcat::concat!(TANWEEN_KASR, MEEM_IQLAB);
 }
 
 /// Characters used by the Quran phonetic script.
 pub mod phonetic {
-    pub const HAMZA: char = super::uthmani::HAMZA;
-    pub const BAA: char = super::uthmani::BAA;
-    pub const TAA: char = super::uthmani::TAA_MABSOOTA;
-    pub const THAA: char = super::uthmani::THAA;
-    pub const JEEM: char = super::uthmani::JEEM;
-    pub const HAA_MOHMALA: char = super::uthmani::HAA_MOHMALA;
-    pub const KHAA: char = super::uthmani::KHAA;
-    pub const DAAL: char = super::uthmani::DAAL;
-    pub const THAAL: char = super::uthmani::THAAL;
-    pub const RAA: char = super::uthmani::RAA;
-    pub const ZAY: char = super::uthmani::ZAY;
-    pub const SEEN: char = super::uthmani::SEEN;
-    pub const SHEEN: char = super::uthmani::SHEEN;
-    pub const SAAD: char = super::uthmani::SAAD;
-    pub const DAAD: char = super::uthmani::DAAD;
-    pub const TAA_MOFAKHAMA: char = super::uthmani::TAA_MOFAKHAMA;
-    pub const ZAA_MOFAKHAMA: char = super::uthmani::ZAA_MOFAKHAMA;
-    pub const AYN: char = super::uthmani::AYN;
-    pub const GHYN: char = super::uthmani::GHYN;
-    pub const FAA: char = super::uthmani::FAA;
-    pub const QAF: char = super::uthmani::QAF;
-    pub const KAF: char = super::uthmani::KAF;
-    pub const LAM: char = super::uthmani::LAM;
-    pub const MEEM: char = super::uthmani::MEEM;
-    pub const NOON: char = super::uthmani::NOON;
-    pub const HAA: char = super::uthmani::HAA;
-    pub const WAW: char = super::uthmani::WAW;
-    pub const YAA: char = super::uthmani::YAA;
+    pub const HAMZA: &str = super::uthmani::HAMZA;
+    pub const BAA: &str = super::uthmani::BAA;
+    pub const TAA: &str = super::uthmani::TAA_MABSOOTA;
+    pub const THAA: &str = super::uthmani::THAA;
+    pub const JEEM: &str = super::uthmani::JEEM;
+    pub const HAA_MOHMALA: &str = super::uthmani::HAA_MOHMALA;
+    pub const KHAA: &str = super::uthmani::KHAA;
+    pub const DAAL: &str = super::uthmani::DAAL;
+    pub const THAAL: &str = super::uthmani::THAAL;
+    pub const RAA: &str = super::uthmani::RAA;
+    pub const ZAY: &str = super::uthmani::ZAY;
+    pub const SEEN: &str = super::uthmani::SEEN;
+    pub const SHEEN: &str = super::uthmani::SHEEN;
+    pub const SAAD: &str = super::uthmani::SAAD;
+    pub const DAAD: &str = super::uthmani::DAAD;
+    pub const TAA_MOFAKHAMA: &str = super::uthmani::TAA_MOFAKHAMA;
+    pub const ZAA_MOFAKHAMA: &str = super::uthmani::ZAA_MOFAKHAMA;
+    pub const AYN: &str = super::uthmani::AYN;
+    pub const GHYN: &str = super::uthmani::GHYN;
+    pub const FAA: &str = super::uthmani::FAA;
+    pub const QAF: &str = super::uthmani::QAF;
+    pub const KAF: &str = super::uthmani::KAF;
+    pub const LAM: &str = super::uthmani::LAM;
+    pub const MEEM: &str = super::uthmani::MEEM;
+    pub const NOON: &str = super::uthmani::NOON;
+    pub const HAA: &str = super::uthmani::HAA;
+    pub const WAW: &str = super::uthmani::WAW;
+    pub const YAA: &str = super::uthmani::YAA;
 
     /// Long-vowel characters.
-    pub const ALIF: char = super::uthmani::ALIF;
-    pub const YAA_MADD: char = super::uthmani::SMALL_YAA_SILA;
-    pub const WAW_MADD: char = super::uthmani::SMALL_WAW;
+    pub const ALIF: &str = super::uthmani::ALIF;
+    pub const YAA_MADD: &str = super::uthmani::SMALL_YAA_SILA;
+    pub const WAW_MADD: &str = super::uthmani::SMALL_WAW;
 
     /// Short-vowel characters.
-    pub const FATHA: char = super::uthmani::FATHA;
-    pub const DAMA: char = super::uthmani::DAMA;
-    pub const KASRA: char = super::uthmani::KASRA;
+    pub const FATHA: &str = super::uthmani::FATHA;
+    pub const DAMA: &str = super::uthmani::DAMA;
+    pub const KASRA: &str = super::uthmani::KASRA;
 
     /// Special phonetic-script characters.
-    pub const FATHA_MOMALA: char = super::uthmani::IMALA_SIGN;
-    pub const ALIF_MOMALA: char = super::uthmani::KASHEEDA;
-    pub const HAMZA_MOSAHALA: char = '\u{0672}';
-    pub const QLQLA: char = '\u{0687}';
-    pub const NOON_MOKHFAH: char = '\u{06ba}';
-    pub const MEEM_MOKHFAH: char = '\u{06fe}';
-    pub const SAKT: char = super::uthmani::SMALL_SEEN_ABOVE;
-    pub const DAMA_MOKHTALASA: char = '\u{0619}';
+    pub const FATHA_MOMALA: &str = super::uthmani::IMALA_SIGN;
+    pub const ALIF_MOMALA: &str = super::uthmani::KASHEEDA;
+    pub const HAMZA_MOSAHALA: &str = "\u{0672}";
+    pub const QLQLA: &str = "\u{0687}";
+    pub const NOON_MOKHFAH: &str = "\u{06ba}";
+    pub const MEEM_MOKHFAH: &str = "\u{06fe}";
+    pub const SAKT: &str = super::uthmani::SMALL_SEEN_ABOVE;
+    pub const DAMA_MOKHTALASA: &str = "\u{0619}";
 }
 
 /// Phonetic character groups used to classify pronunciation properties.
+///
+/// Built with `constcat::concat!` in the same construction order as Python.
 pub mod phonetic_groups {
-    pub const CORE: &str = "ءبتثجحخدذرزسشصضطظعغفقكلمنهوياۥۦ\u{06fe}\u{06ba}ـ\u{0672}";
-    pub const RESIDUALS: &str = "َُِ\u{0687}۪ۜ\u{0619}";
-    pub const HARAKAT: &str = "َُِ";
-    pub const HAMS: &str = "فحثهشخصسكت";
-    pub const SHIDDA: &str = "ءجدقطبكت";
-    pub const BETWEEN_SHIDDA_RAKHAWA: &str = "لنعمر";
-    pub const TAFKHEEM: &str = "خصضغطقظ";
-    pub const ITBAAQ: &str = "صضطظ";
-    pub const SAFEER: &str = "صزس";
-    pub const QALQAL: &str = "قطبجد";
-    pub const TIKRAR: &str = "ر";
-    pub const TAFASHIE: &str = "ش";
-    pub const ISTITALA: &str = "ض";
-    pub const GHONNA: &str = "نم\u{06ba}\u{06fe}";
+    use super::phonetic;
+    pub const CORE: &str = constcat::concat!(
+        phonetic::HAMZA,
+        phonetic::BAA,
+        phonetic::TAA,
+        phonetic::THAA,
+        phonetic::JEEM,
+        phonetic::HAA_MOHMALA,
+        phonetic::KHAA,
+        phonetic::DAAL,
+        phonetic::THAAL,
+        phonetic::RAA,
+        phonetic::ZAY,
+        phonetic::SEEN,
+        phonetic::SHEEN,
+        phonetic::SAAD,
+        phonetic::DAAD,
+        phonetic::TAA_MOFAKHAMA,
+        phonetic::ZAA_MOFAKHAMA,
+        phonetic::AYN,
+        phonetic::GHYN,
+        phonetic::FAA,
+        phonetic::QAF,
+        phonetic::KAF,
+        phonetic::LAM,
+        phonetic::MEEM,
+        phonetic::NOON,
+        phonetic::HAA,
+        phonetic::WAW,
+        phonetic::YAA,
+        phonetic::ALIF,
+        phonetic::WAW_MADD,
+        phonetic::YAA_MADD,
+        phonetic::MEEM_MOKHFAH,
+        phonetic::NOON_MOKHFAH,
+        phonetic::ALIF_MOMALA,
+        phonetic::HAMZA_MOSAHALA
+    );
+    pub const RESIDUALS: &str = constcat::concat!(
+        phonetic::FATHA,
+        phonetic::DAMA,
+        phonetic::KASRA,
+        phonetic::QLQLA,
+        phonetic::FATHA_MOMALA,
+        phonetic::SAKT,
+        phonetic::DAMA_MOKHTALASA
+    );
+    pub const HARAKAT: &str = constcat::concat!(phonetic::FATHA, phonetic::DAMA, phonetic::KASRA);
+    pub const HAMS: &str = constcat::concat!(
+        phonetic::FAA,
+        phonetic::HAA_MOHMALA,
+        phonetic::THAA,
+        phonetic::HAA,
+        phonetic::SHEEN,
+        phonetic::KHAA,
+        phonetic::SAAD,
+        phonetic::SEEN,
+        phonetic::KAF,
+        phonetic::TAA
+    );
+    pub const SHIDDA: &str = constcat::concat!(
+        phonetic::HAMZA,
+        phonetic::JEEM,
+        phonetic::DAAL,
+        phonetic::QAF,
+        phonetic::TAA_MOFAKHAMA,
+        phonetic::BAA,
+        phonetic::KAF,
+        phonetic::TAA
+    );
+    pub const BETWEEN_SHIDDA_RAKHAWA: &str = constcat::concat!(
+        phonetic::LAM,
+        phonetic::NOON,
+        phonetic::AYN,
+        phonetic::MEEM,
+        phonetic::RAA
+    );
+    pub const TAFKHEEM: &str = constcat::concat!(
+        phonetic::KHAA,
+        phonetic::SAAD,
+        phonetic::DAAD,
+        phonetic::GHYN,
+        phonetic::TAA_MOFAKHAMA,
+        phonetic::QAF,
+        phonetic::ZAA_MOFAKHAMA
+    );
+    pub const ITBAAQ: &str = constcat::concat!(
+        phonetic::SAAD,
+        phonetic::DAAD,
+        phonetic::TAA_MOFAKHAMA,
+        phonetic::ZAA_MOFAKHAMA
+    );
+    pub const SAFEER: &str = constcat::concat!(phonetic::SAAD, phonetic::ZAY, phonetic::SEEN);
+    pub const QALQAL: &str = constcat::concat!(
+        phonetic::QAF,
+        phonetic::TAA_MOFAKHAMA,
+        phonetic::BAA,
+        phonetic::JEEM,
+        phonetic::DAAL
+    );
+    pub const TIKRAR: &str = phonetic::RAA;
+    pub const TAFASHIE: &str = phonetic::SHEEN;
+    pub const ISTITALA: &str = phonetic::DAAD;
+    pub const GHONNA: &str = constcat::concat!(
+        phonetic::NOON,
+        phonetic::MEEM,
+        phonetic::NOON_MOKHFAH,
+        phonetic::MEEM_MOKHFAH
+    );
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{
-        PatternPosition, begin_hamzat_wasl, imlaey, phonetic, phonetic_groups, quran_alphabet,
-        uthmani,
-    };
-    use crate::QURAN_ALPHABET_JSON;
-
-    fn source_text<'a>(alphabet: &'a serde_json::Value, section: &str, name: &str) -> &'a str {
-        alphabet[section][name]
-            .as_str()
-            .unwrap_or_else(|| panic!("missing {section} alphabet value: {name}"))
-    }
-
-    fn source_character(alphabet: &serde_json::Value, section: &str, name: &str) -> char {
-        let value = source_text(alphabet, section, name);
-
-        let mut characters = value.chars();
-        let character = characters
-            .next()
-            .unwrap_or_else(|| panic!("Uthmani alphabet value is empty: {name}"));
-
-        assert!(
-            characters.next().is_none(),
-            "Uthmani alphabet value must be one character: {name}"
-        );
-
-        character
-    }
-
-    fn join_characters(characters: &[char]) -> String {
-        characters.iter().copied().collect()
-    }
+    use super::{PatternPosition, begin_hamzat_wasl, imlaey, phonetic, quran_alphabet, uthmani};
 
     #[test]
+    #[allow(clippy::too_many_lines)]
     fn uthmani_constants_match_the_source_data() {
-        let alphabet: serde_json::Value =
-            serde_json::from_str(QURAN_ALPHABET_JSON).expect("alphabet JSON must be valid");
+        let source = &quran_alphabet().uthmani;
 
-        for (name, constant) in [
-            ("space", uthmani::SPACE),
-            ("alif", uthmani::ALIF),
-            ("alif_maksora", uthmani::ALIF_MAKSORA),
-            ("baa", uthmani::BAA),
-            ("taa_mabsoota", uthmani::TAA_MABSOOTA),
-            ("taa_marboota", uthmani::TAA_MARBOOTA),
-            ("thaa", uthmani::THAA),
-            ("jeem", uthmani::JEEM),
-            ("haa_mohmala", uthmani::HAA_MOHMALA),
-            ("khaa", uthmani::KHAA),
-            ("daal", uthmani::DAAL),
-            ("thaal", uthmani::THAAL),
-            ("raa", uthmani::RAA),
-            ("zay", uthmani::ZAY),
-            ("seen", uthmani::SEEN),
-            ("sheen", uthmani::SHEEN),
-            ("saad", uthmani::SAAD),
-            ("daad", uthmani::DAAD),
-            ("taa_mofakhama", uthmani::TAA_MOFAKHAMA),
-            ("zaa_mofakhama", uthmani::ZAA_MOFAKHAMA),
-            ("ayn", uthmani::AYN),
-            ("ghyn", uthmani::GHYN),
-            ("faa", uthmani::FAA),
-            ("qaf", uthmani::QAF),
-            ("kaf", uthmani::KAF),
-            ("lam", uthmani::LAM),
-            ("meem", uthmani::MEEM),
-            ("noon", uthmani::NOON),
-            ("haa", uthmani::HAA),
-            ("waw", uthmani::WAW),
-            ("yaa", uthmani::YAA),
-            ("hamza", uthmani::HAMZA),
-            ("hamza_above_alif", uthmani::HAMZA_ABOVE_ALIF),
-            ("hamza_below_alif", uthmani::HAMZA_BELOW_ALIF),
-            ("hamza_above_waw", uthmani::HAMZA_ABOVE_WAW),
-            ("hamza_above_yaa", uthmani::HAMZA_ABOVE_YAA),
-            ("hamza_mamdoda", uthmani::HAMZA_MAMDODA),
-            ("tanween_fath", uthmani::TANWEEN_FATH),
-            ("tanween_dam", uthmani::TANWEEN_DAM),
-            ("tanween_kasr", uthmani::TANWEEN_KASR),
-            ("fatha", uthmani::FATHA),
-            ("dama", uthmani::DAMA),
-            ("kasra", uthmani::KASRA),
-            ("shadda", uthmani::SHADDA),
-            ("ras_haaa", uthmani::RAS_HAAA),
-            ("madd", uthmani::MADD),
-            ("hamzat_wasl", uthmani::HAMZAT_WASL),
-            ("alif_khnjaria", uthmani::ALIF_KHNJARIA),
-            ("small_seen_above", uthmani::SMALL_SEEN_ABOVE),
-            ("small_seen_below", uthmani::SMALL_SEEN_BELOW),
-            ("small_waw", uthmani::SMALL_WAW),
-            ("small_yaa_sila", uthmani::SMALL_YAA_SILA),
-            ("small_yaa", uthmani::SMALL_YAA),
-            ("small_noon", uthmani::SMALL_NOON),
-            ("skoon_mostadeer", uthmani::SKOON_MOSTADEER),
-            ("skoon_mostateel", uthmani::SKOON_MOSTATEEL),
-            ("meem_iqlab", uthmani::MEEM_IQLAB),
-            ("imala_sign", uthmani::IMALA_SIGN),
-            ("ishmam_sign", uthmani::ISHMAM_SIGN),
-            ("tasheel_sign", uthmani::TASHEEL_SIGN),
+        for (constant, field) in [
+            (uthmani::SPACE, source.space.as_str()),
+            (uthmani::ALIF, source.alif.as_str()),
+            (uthmani::ALIF_MAKSORA, source.alif_maksora.as_str()),
+            (uthmani::BAA, source.baa.as_str()),
+            (uthmani::TAA_MABSOOTA, source.taa_mabsoota.as_str()),
+            (uthmani::TAA_MARBOOTA, source.taa_marboota.as_str()),
+            (uthmani::THAA, source.thaa.as_str()),
+            (uthmani::JEEM, source.jeem.as_str()),
+            (uthmani::HAA_MOHMALA, source.haa_mohmala.as_str()),
+            (uthmani::KHAA, source.khaa.as_str()),
+            (uthmani::DAAL, source.daal.as_str()),
+            (uthmani::THAAL, source.thaal.as_str()),
+            (uthmani::RAA, source.raa.as_str()),
+            (uthmani::ZAY, source.zay.as_str()),
+            (uthmani::SEEN, source.seen.as_str()),
+            (uthmani::SHEEN, source.sheen.as_str()),
+            (uthmani::SAAD, source.saad.as_str()),
+            (uthmani::DAAD, source.daad.as_str()),
+            (uthmani::TAA_MOFAKHAMA, source.taa_mofakhama.as_str()),
+            (uthmani::ZAA_MOFAKHAMA, source.zaa_mofakhama.as_str()),
+            (uthmani::AYN, source.ayn.as_str()),
+            (uthmani::GHYN, source.ghyn.as_str()),
+            (uthmani::FAA, source.faa.as_str()),
+            (uthmani::QAF, source.qaf.as_str()),
+            (uthmani::KAF, source.kaf.as_str()),
+            (uthmani::LAM, source.lam.as_str()),
+            (uthmani::MEEM, source.meem.as_str()),
+            (uthmani::NOON, source.noon.as_str()),
+            (uthmani::HAA, source.haa.as_str()),
+            (uthmani::WAW, source.waw.as_str()),
+            (uthmani::YAA, source.yaa.as_str()),
+            (uthmani::HAMZA, source.hamza.as_str()),
+            (uthmani::HAMZA_ABOVE_ALIF, source.hamza_above_alif.as_str()),
+            (uthmani::HAMZA_BELOW_ALIF, source.hamza_below_alif.as_str()),
+            (uthmani::HAMZA_ABOVE_WAW, source.hamza_above_waw.as_str()),
+            (uthmani::HAMZA_ABOVE_YAA, source.hamza_above_yaa.as_str()),
+            (uthmani::HAMZA_MAMDODA, source.hamza_mamdoda.as_str()),
+            (uthmani::TANWEEN_FATH, source.tanween_fath.as_str()),
+            (uthmani::TANWEEN_DAM, source.tanween_dam.as_str()),
+            (uthmani::TANWEEN_KASR, source.tanween_kasr.as_str()),
+            (uthmani::FATHA, source.fatha.as_str()),
+            (uthmani::DAMA, source.dama.as_str()),
+            (uthmani::KASRA, source.kasra.as_str()),
+            (uthmani::SHADDA, source.shadda.as_str()),
+            (uthmani::RAS_HAAA, source.ras_haaa.as_str()),
+            (uthmani::MADD, source.madd.as_str()),
+            (uthmani::HAMZAT_WASL, source.hamzat_wasl.as_str()),
+            (uthmani::ALIF_KHNJARIA, source.alif_khnjaria.as_str()),
+            (uthmani::SMALL_SEEN_ABOVE, source.small_seen_above.as_str()),
+            (uthmani::SMALL_SEEN_BELOW, source.small_seen_below.as_str()),
+            (uthmani::SMALL_WAW, source.small_waw.as_str()),
+            (uthmani::SMALL_YAA_SILA, source.small_yaa_sila.as_str()),
+            (uthmani::SMALL_YAA, source.small_yaa.as_str()),
+            (uthmani::SMALL_NOON, source.small_noon.as_str()),
+            (uthmani::SKOON_MOSTADEER, source.skoon_mostadeer.as_str()),
+            (uthmani::SKOON_MOSTATEEL, source.skoon_mostateel.as_str()),
+            (uthmani::MEEM_IQLAB, source.meem_iqlab.as_str()),
+            (uthmani::IMALA_SIGN, source.imala_sign.as_str()),
+            (uthmani::ISHMAM_SIGN, source.ishmam_sign.as_str()),
+            (uthmani::TASHEEL_SIGN, source.tasheel_sign.as_str()),
             (
-                "tanween_idhaam_dterminer",
                 uthmani::TANWEEN_IDHAAM_DTERMINER,
+                source.tanween_idhaam_dterminer.as_str(),
             ),
-            ("kasheeda", uthmani::KASHEEDA),
+            (uthmani::KASHEEDA, source.kasheeda.as_str()),
         ] {
-            assert_eq!(constant, source_character(&alphabet, "uthmani", name));
+            assert_eq!(constant, field);
         }
 
-        for (name, group) in [
-            ("madd_alif", uthmani::MADD_ALIF),
-            ("madd_waw", uthmani::MADD_WAW),
-            ("madd_yaa", uthmani::MADD_YAA),
-            ("noon_ikhfaa_group", uthmani::NOON_IKHFAA_GROUP),
-            ("noon_idgham_group", uthmani::NOON_IDGHAM_GROUP),
-            ("harakat_group", uthmani::HARAKAT_GROUP),
-            ("hamazat_group", uthmani::HAMAZAT_GROUP),
-            ("letters_group", uthmani::LETTERS_GROUP),
-            ("pure_letters_group", uthmani::PURE_LETTERS_GROUP),
+        for (group, field) in [
+            (uthmani::MADD_ALIF, source.madd_alif.as_str()),
+            (uthmani::MADD_WAW, source.madd_waw.as_str()),
+            (uthmani::MADD_YAA, source.madd_yaa.as_str()),
             (
-                "pure_letters_without_yaa_and_waw_group",
-                uthmani::PURE_LETTERS_WITHOUT_YAA_AND_WAW_GROUP,
+                uthmani::NOON_IKHFAA_GROUP,
+                source.noon_ikhfaa_group.as_str(),
             ),
-            ("qlqla_group", uthmani::QLQLA_GROUP),
-            ("tanween_fath_mothhar", uthmani::TANWEEN_FATH_MOTHHAR),
-            ("tanween_dam_mothhar", uthmani::TANWEEN_DAM_MOTHHAR),
-            ("tanween_kasr_mothhar", uthmani::TANWEEN_KASR_MOTHHAR),
-            ("tanween_fath_modgham", uthmani::TANWEEN_FATH_MODGHAM),
-            ("tanween_dam_modgham", uthmani::TANWEEN_DAM_MODGHAM),
-            ("tanween_kasr_modgham", uthmani::TANWEEN_KASR_MODGHAM),
-            ("tanween_fath_iqlab", uthmani::TANWEEN_FATH_IQLAB),
-            ("tanween_dam_iqlab", uthmani::TANWEEN_DAM_IQLAB),
-            ("tanween_kasr_iqlab", uthmani::TANWEEN_KASR_IQLAB),
+            (
+                uthmani::NOON_IDGHAM_GROUP,
+                source.noon_idgham_group.as_str(),
+            ),
+            (uthmani::HARAKAT_GROUP, source.harakat_group.as_str()),
+            (uthmani::HAMAZAT_GROUP, source.hamazat_group.as_str()),
+            (uthmani::LETTERS_GROUP, source.letters_group.as_str()),
+            (
+                uthmani::PURE_LETTERS_GROUP,
+                source.pure_letters_group.as_str(),
+            ),
+            (
+                uthmani::PURE_LETTERS_WITHOUT_YAA_AND_WAW_GROUP,
+                source.pure_letters_without_yaa_and_waw_group.as_str(),
+            ),
+            (uthmani::QLQLA_GROUP, source.qlqla_group.as_str()),
+            (
+                uthmani::TANWEEN_FATH_MOTHHAR,
+                source.tanween_fath_mothhar.as_str(),
+            ),
+            (
+                uthmani::TANWEEN_DAM_MOTHHAR,
+                source.tanween_dam_mothhar.as_str(),
+            ),
+            (
+                uthmani::TANWEEN_KASR_MOTHHAR,
+                source.tanween_kasr_mothhar.as_str(),
+            ),
+            (
+                uthmani::TANWEEN_FATH_MODGHAM,
+                source.tanween_fath_modgham.as_str(),
+            ),
+            (
+                uthmani::TANWEEN_DAM_MODGHAM,
+                source.tanween_dam_modgham.as_str(),
+            ),
+            (
+                uthmani::TANWEEN_KASR_MODGHAM,
+                source.tanween_kasr_modgham.as_str(),
+            ),
+            (
+                uthmani::TANWEEN_FATH_IQLAB,
+                source.tanween_fath_iqlab.as_str(),
+            ),
+            (
+                uthmani::TANWEEN_DAM_IQLAB,
+                source.tanween_dam_iqlab.as_str(),
+            ),
+            (
+                uthmani::TANWEEN_KASR_IQLAB,
+                source.tanween_kasr_iqlab.as_str(),
+            ),
         ] {
-            assert_eq!(group, source_text(&alphabet, "uthmani", name));
+            assert_eq!(group, field);
         }
     }
 
     #[test]
     fn imlaey_constants_match_the_source_data() {
-        let alphabet: serde_json::Value =
-            serde_json::from_str(QURAN_ALPHABET_JSON).expect("alphabet JSON must be valid");
+        let source = &quran_alphabet().imlaey;
 
-        for (name, constant) in [
-            ("alphabet", imlaey::ALPHABET),
-            ("hamazat", imlaey::HAMAZAT),
-            ("tashkeel", imlaey::TASHKEEL),
+        for (constant, field) in [
+            (imlaey::ALPHABET, source.alphabet.as_str()),
+            (imlaey::HAMAZAT, source.hamazat.as_str()),
+            (imlaey::TASHKEEL, source.tashkeel.as_str()),
+            (imlaey::HAMZA, source.hamza.as_str()),
+            (imlaey::ALEF, source.alef.as_str()),
+            (imlaey::ALEF_MAKSOORA, source.alef_maksoora.as_str()),
+            (imlaey::TAA_MARBOOTA, source.taa_marboota.as_str()),
+            (imlaey::TAA_MABSOOTA, source.taa_mabsoota.as_str()),
+            (imlaey::HAA, source.haa.as_str()),
+            (imlaey::SMALL_ALEF, source.small_alef.as_str()),
+            (imlaey::SKOON, source.skoon.as_str()),
         ] {
-            assert_eq!(constant, source_text(&alphabet, "imlaey", name));
-        }
-
-        for (name, constant) in [
-            ("hamza", imlaey::HAMZA),
-            ("alef", imlaey::ALEF),
-            ("alef_maksoora", imlaey::ALEF_MAKSOORA),
-            ("taa_marboota", imlaey::TAA_MARBOOTA),
-            ("taa_mabsoota", imlaey::TAA_MABSOOTA),
-            ("haa", imlaey::HAA),
-            ("small_alef", imlaey::SMALL_ALEF),
-            ("skoon", imlaey::SKOON),
-        ] {
-            assert_eq!(constant, source_character(&alphabet, "imlaey", name));
+            assert_eq!(constant, field);
         }
     }
 
@@ -553,19 +854,21 @@ mod tests {
             assert_eq!(constant, source);
         }
 
-        assert_eq!(phonetic::HAMZA_MOSAHALA, '\u{0672}');
-        assert_eq!(phonetic::QLQLA, '\u{0687}');
-        assert_eq!(phonetic::NOON_MOKHFAH, '\u{06ba}');
-        assert_eq!(phonetic::MEEM_MOKHFAH, '\u{06fe}');
-        assert_eq!(phonetic::DAMA_MOKHTALASA, '\u{0619}');
+        assert_eq!(phonetic::HAMZA_MOSAHALA, "ٲ");
+        assert_eq!(phonetic::QLQLA, "\u{0687}");
+        assert_eq!(phonetic::NOON_MOKHFAH, "\u{06ba}");
+        assert_eq!(phonetic::MEEM_MOKHFAH, "\u{06fe}");
+        assert_eq!(phonetic::DAMA_MOKHTALASA, "\u{0619}");
     }
 
     #[test]
-    #[allow(clippy::too_many_lines)] // Mirrors Python's complete group construction order.
+    #[allow(clippy::too_many_lines)]
     fn phonetic_groups_match_the_python_construction_order() {
+        use super::phonetic_groups;
+
         assert_eq!(
             phonetic_groups::CORE,
-            join_characters(&[
+            [
                 phonetic::HAMZA,
                 phonetic::BAA,
                 phonetic::TAA,
@@ -601,11 +904,12 @@ mod tests {
                 phonetic::NOON_MOKHFAH,
                 phonetic::ALIF_MOMALA,
                 phonetic::HAMZA_MOSAHALA,
-            ])
+            ]
+            .concat()
         );
         assert_eq!(
             phonetic_groups::RESIDUALS,
-            join_characters(&[
+            [
                 phonetic::FATHA,
                 phonetic::DAMA,
                 phonetic::KASRA,
@@ -613,15 +917,16 @@ mod tests {
                 phonetic::FATHA_MOMALA,
                 phonetic::SAKT,
                 phonetic::DAMA_MOKHTALASA,
-            ])
+            ]
+            .concat()
         );
         assert_eq!(
             phonetic_groups::HARAKAT,
-            join_characters(&[phonetic::FATHA, phonetic::DAMA, phonetic::KASRA])
+            [phonetic::FATHA, phonetic::DAMA, phonetic::KASRA].concat()
         );
         assert_eq!(
             phonetic_groups::HAMS,
-            join_characters(&[
+            [
                 phonetic::FAA,
                 phonetic::HAA_MOHMALA,
                 phonetic::THAA,
@@ -632,11 +937,12 @@ mod tests {
                 phonetic::SEEN,
                 phonetic::KAF,
                 phonetic::TAA,
-            ])
+            ]
+            .concat()
         );
         assert_eq!(
             phonetic_groups::SHIDDA,
-            join_characters(&[
+            [
                 phonetic::HAMZA,
                 phonetic::JEEM,
                 phonetic::DAAL,
@@ -645,21 +951,23 @@ mod tests {
                 phonetic::BAA,
                 phonetic::KAF,
                 phonetic::TAA,
-            ])
+            ]
+            .concat()
         );
         assert_eq!(
             phonetic_groups::BETWEEN_SHIDDA_RAKHAWA,
-            join_characters(&[
+            [
                 phonetic::LAM,
                 phonetic::NOON,
                 phonetic::AYN,
                 phonetic::MEEM,
                 phonetic::RAA,
-            ])
+            ]
+            .concat()
         );
         assert_eq!(
             phonetic_groups::TAFKHEEM,
-            join_characters(&[
+            [
                 phonetic::KHAA,
                 phonetic::SAAD,
                 phonetic::DAAD,
@@ -667,42 +975,46 @@ mod tests {
                 phonetic::TAA_MOFAKHAMA,
                 phonetic::QAF,
                 phonetic::ZAA_MOFAKHAMA,
-            ])
+            ]
+            .concat()
         );
         assert_eq!(
             phonetic_groups::ITBAAQ,
-            join_characters(&[
+            [
                 phonetic::SAAD,
                 phonetic::DAAD,
                 phonetic::TAA_MOFAKHAMA,
                 phonetic::ZAA_MOFAKHAMA,
-            ])
+            ]
+            .concat()
         );
         assert_eq!(
             phonetic_groups::SAFEER,
-            join_characters(&[phonetic::SAAD, phonetic::ZAY, phonetic::SEEN])
+            [phonetic::SAAD, phonetic::ZAY, phonetic::SEEN].concat()
         );
         assert_eq!(
             phonetic_groups::QALQAL,
-            join_characters(&[
+            [
                 phonetic::QAF,
                 phonetic::TAA_MOFAKHAMA,
                 phonetic::BAA,
                 phonetic::JEEM,
                 phonetic::DAAL,
-            ])
+            ]
+            .concat()
         );
-        assert_eq!(phonetic_groups::TIKRAR, phonetic::RAA.to_string());
-        assert_eq!(phonetic_groups::TAFASHIE, phonetic::SHEEN.to_string());
-        assert_eq!(phonetic_groups::ISTITALA, phonetic::DAAD.to_string());
+        assert_eq!(phonetic_groups::TIKRAR, phonetic::RAA);
+        assert_eq!(phonetic_groups::TAFASHIE, phonetic::SHEEN);
+        assert_eq!(phonetic_groups::ISTITALA, phonetic::DAAD);
         assert_eq!(
             phonetic_groups::GHONNA,
-            join_characters(&[
+            [
                 phonetic::NOON,
                 phonetic::MEEM,
                 phonetic::NOON_MOKHFAH,
                 phonetic::MEEM_MOKHFAH,
-            ])
+            ]
+            .concat()
         );
     }
 }

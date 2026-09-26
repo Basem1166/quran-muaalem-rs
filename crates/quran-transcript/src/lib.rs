@@ -10,10 +10,6 @@ pub const BEGIN_WITH_HAMZAT_WASL_JSON: &str = include_str!("../assets/begin_with
 /// The Uthmani-to-Imlaey Quran text data, embedded at build time.
 pub const QURAN_UTHMANI_IMLAEY_JSON: &str = include_str!("../assets/quran-uthmani-imlaey.json");
 
-/// The position mapping between Uthmani and Imlaey Quran text.
-pub const QURAN_UTHMANI_IMLAEY_MAP_JSON: &str =
-    include_str!("../assets/quran-uthmani-imlaey-map.json");
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -29,12 +25,8 @@ mod tests {
         let uthmani_imlaey: serde_json::Value = serde_json::from_str(QURAN_UTHMANI_IMLAEY_JSON)
             .expect("Uthmani-Imlaey JSON must be valid");
 
-        let mapping: serde_json::Value = serde_json::from_str(QURAN_UTHMANI_IMLAEY_MAP_JSON)
-            .expect("Uthmani-Imlaey mapping JSON must be valid");
-
         assert!(alphabet.is_object());
         assert!(hamzat_wasl.is_object());
         assert!(uthmani_imlaey.is_object());
-        assert!(mapping.is_object());
     }
 }
