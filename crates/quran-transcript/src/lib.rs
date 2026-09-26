@@ -2,6 +2,7 @@ pub mod alphabet;
 pub mod aya;
 pub mod normalize;
 pub mod quran_data;
+pub mod search;
 
 /// The original Quran alphabet data, embedded into this crate at build time.
 pub const QURAN_ALPHABET_JSON: &str = include_str!("../assets/quran-alphabet.json");
