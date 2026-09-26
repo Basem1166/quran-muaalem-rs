@@ -1,4 +1,6 @@
 pub mod alphabet;
+pub mod aya;
+pub mod normalize;
 pub mod quran_data;
 
 /// The original Quran alphabet data, embedded into this crate at build time.
