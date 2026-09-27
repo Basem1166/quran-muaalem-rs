@@ -1,2 +1,4 @@
 **/target
 **/debug
+# BoltFFI packaging output
+crates/engine/dist
