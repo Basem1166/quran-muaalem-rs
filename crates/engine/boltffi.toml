@@ -6,7 +6,9 @@ global_args = []
 [cargo.command_args]
 
 [package]
-name = "quran-muaalem-engine"
+# underscores: Dart/Python package names can't contain hyphens
+name = "quran_muaalem_engine"
+crate = "quran-muaalem-engine"
 
 [targets.apple]
 enabled = true
@@ -79,7 +81,7 @@ output = "dist/wasm"
 [targets.wasm.npm]
 
 [targets.java.jvm]
-enabled = false
+enabled = true
 output = "dist/java"
 strip_symbols = false
 
@@ -95,8 +97,9 @@ output = "dist/java/android"
 min_sdk = 24
 
 [targets.dart]
-output = "dist/dart"
-enabled = false
+# generated into the test workspace: the package uses `resolution: workspace`
+output = "tests/bindings/dart/generated"
+enabled = true
 
 [targets.python]
 output = "dist/python"
