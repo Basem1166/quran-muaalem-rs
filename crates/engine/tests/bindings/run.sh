@@ -45,8 +45,28 @@ run_java() {
     java -cp "$classes${classpath_sep}dist/java" -Djava.library.path="$native_dirs" VersionTest
 }
 
+dart_host_target() {
+    local os arch
+    case "$(uname -s)" in
+        Linux) os=linux ;;
+        Darwin) os=macos ;;
+        MINGW* | MSYS* | CYGWIN*) os=windows ;;
+        *) echo "unsupported OS: $(uname -s)" >&2; return 1 ;;
+    esac
+    case "$(uname -m)" in
+        x86_64 | amd64) arch=x86_64 ;;
+        aarch64 | arm64) arch=arm64 ;;
+        *) echo "unsupported arch: $(uname -m)" >&2; return 1 ;;
+    esac
+    echo "$os:$arch"
+}
+
 run_dart() {
-    boltffi pack dart --release
+    # By default Dart packs every platform; the smoke test only needs the host.
+    local overlay=dist/dart-host.toml
+    mkdir -p dist
+    printf '[targets.dart]\nnative_targets = ["%s"]\n' "$(dart_host_target)" > "$overlay"
+    boltffi pack dart --release --overlay "$overlay"
 
     (cd "$tests/dart" && dart pub get && dart test)
 }
