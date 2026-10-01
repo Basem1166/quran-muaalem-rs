@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 # Pack each BoltFFI binding and run its smoke test against the real native library.
 #
-# Usage: crates/engine/tests/bindings/run.sh [python] [java] [dart]   (default: all)
+# Usage: crates/engine/tests/bindings/run.sh [python] [java] [dart] [swift]
+#        (default: all; swift only on macOS)
 #
 # Needs the boltffi CLI (`cargo install boltffi_cli`), plus per language:
 #   python: python3 (override with PYTHON=...)
 #   java:   a JDK with JAVA_HOME set
 #   dart:   Dart SDK >= 3.10.8
+#   swift:  macOS with Xcode
 # On Windows the Python/Java C glue needs MSVC >= 17.5 (C11 atomics) or clang-cl.
 set -euo pipefail
 
@@ -71,8 +73,34 @@ run_dart() {
     (cd "$tests/dart" && dart pub get && dart test)
 }
 
+run_swift() {
+    # By default Apple packs iOS device + simulator slices only; the smoke test
+    # runs natively on macOS, so build just the host macOS slice.
+    local arch
+    case "$(uname -m)" in
+        arm64) arch=arm64 ;;
+        x86_64) arch=x86_64 ;;
+        *) echo "unsupported arch: $(uname -m)" >&2; return 1 ;;
+    esac
+    local overlay=dist/apple-host.toml
+    mkdir -p dist
+    cat > "$overlay" <<EOF
+[targets.apple]
+include_macos = true
+ios_architectures = []
+simulator_architectures = []
+macos_architectures = ["$arch"]
+EOF
+    boltffi pack apple --release --overlay "$overlay"
+
+    (cd "$tests/swift" && swift test)
+}
+
 langs=("$@")
-[ ${#langs[@]} -gt 0 ] || langs=(python java dart)
+if [ ${#langs[@]} -eq 0 ]; then
+    langs=(python java dart)
+    [ "$(uname -s)" = Darwin ] && langs+=(swift)
+fi
 
 for lang in "${langs[@]}"; do
     echo "==> $lang"

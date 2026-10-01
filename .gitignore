@@ -7,4 +7,6 @@ crates/engine/tests/bindings/dart/generated
 crates/engine/tests/bindings/dart/.dart_tool
 crates/engine/tests/bindings/dart/pubspec.lock
 crates/engine/tests/bindings/python/.venv
+crates/engine/tests/bindings/swift/.build
+crates/engine/tests/bindings/swift/Package.resolved
 __pycache__/

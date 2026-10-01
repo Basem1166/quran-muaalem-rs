@@ -31,11 +31,16 @@ env:
 jobs:
   bindings:
     name: ${{ matrix.lang }}
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        lang: [python, java, dart]
+        include:
+          - { lang: python, os: ubuntu-latest }
+          - { lang: java, os: ubuntu-latest }
+          - { lang: dart, os: ubuntu-latest }
+          # Xcode + Swift come preinstalled on macOS runners
+          - { lang: swift, os: macos-latest }
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
@@ -48,7 +53,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cargo/bin/boltffi
-          key: boltffi-cli-${{ runner.os }}-${{ env.BOLTFFI_VERSION }}
+          key: boltffi-cli-${{ runner.os }}-${{ runner.arch }}-${{ env.BOLTFFI_VERSION }}
       - name: Install boltffi CLI
         if: steps.boltffi-cache.outputs.cache-hit != 'true'
         run: cargo install boltffi_cli --version "$BOLTFFI_VERSION" --locked
