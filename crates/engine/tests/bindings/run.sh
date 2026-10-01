@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 # Pack each BoltFFI binding and run its smoke test against the real native library.
 #
-# Usage: crates/engine/tests/bindings/run.sh [python] [java] [dart] [swift]
-#        (default: all; swift only on macOS)
+# Usage: crates/engine/tests/bindings/run.sh [python] [java] [kotlin] [dart] [swift]
+#        (default: python java dart, plus swift on macOS)
 #
 # Needs the boltffi CLI (`cargo install boltffi_cli`), plus per language:
 #   python: python3 (override with PYTHON=...)
 #   java:   a JDK with JAVA_HOME set
+#   kotlin: a JDK with JAVA_HOME set, kotlinc, rustup, and the Android NDK (ANDROID_NDK_HOME)
 #   dart:   Dart SDK >= 3.10.8
 #   swift:  macOS with Xcode
 # On Windows the Python/Java C glue needs MSVC >= 17.5 (C11 atomics) or clang-cl.
@@ -45,6 +46,30 @@ run_java() {
     local native_dirs
     native_dirs="$(find dist/java/native -mindepth 1 -maxdepth 1 -type d | paste -sd "$classpath_sep" -)"
     java -cp "$classes${classpath_sep}dist/java" -Djava.library.path="$native_dirs" VersionTest
+}
+
+run_kotlin() {
+    # Runs the Android Kotlin bindings on the desktop JVM via BoltFFI's desktop_pack.
+    # Android needs at least one architecture, so build just x86_64 (needs ANDROID_NDK_HOME).
+    rustup target add x86_64-linux-android
+    local overlay=dist/kotlin-desktop.toml
+    mkdir -p dist
+    cat > "$overlay" <<EOF
+[targets.android]
+architectures = ["x86_64"]
+
+[targets.android.kotlin.desktop_pack]
+enabled = true
+EOF
+    boltffi pack android --release --overlay "$overlay"
+
+    local jar=dist/kotlin-test.jar
+    kotlinc $(find dist/android/kotlin -name '*.kt') "$tests/kotlin/VersionTest.kt" -include-runtime -d "$jar"
+
+    local native_dirs
+    native_dirs="$(find dist/android/desktopJniLibs -mindepth 1 -maxdepth 1 -type d | paste -sd "$classpath_sep" -)"
+    LD_LIBRARY_PATH="$native_dirs${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" \
+        java -Djava.library.path="$native_dirs" -cp "$jar" VersionTestKt
 }
 
 dart_host_target() {

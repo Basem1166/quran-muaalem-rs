@@ -38,6 +38,8 @@ jobs:
         include:
           - { lang: python, os: ubuntu-latest }
           - { lang: java, os: ubuntu-latest }
+          # Android Kotlin bindings on the desktop JVM; the runner image ships the Android NDK
+          - { lang: kotlin, os: ubuntu-latest }
           - { lang: dart, os: ubuntu-latest }
           # Xcode + Swift come preinstalled on macOS runners
           - { lang: swift, os: macos-latest }
@@ -62,11 +64,20 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - if: matrix.lang == 'java'
+      - if: matrix.lang == 'java' || matrix.lang == 'kotlin'
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "21"
+      - name: Install kotlinc
+        if: matrix.lang == 'kotlin'
+        run: |
+          if ! command -v kotlinc >/dev/null; then
+            curl -fsSL -o "$RUNNER_TEMP/kotlinc.zip" \
+              https://github.com/JetBrains/kotlin/releases/download/v2.2.20/kotlin-compiler-2.2.20.zip
+            unzip -q "$RUNNER_TEMP/kotlinc.zip" -d "$RUNNER_TEMP"
+            echo "$RUNNER_TEMP/kotlinc/bin" >> "$GITHUB_PATH"
+          fi
       - if: matrix.lang == 'dart'
         uses: dart-lang/setup-dart@v1
         with:
