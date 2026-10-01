@@ -9,8 +9,9 @@ homepage.workspace = true
 description.workspace = true
 
 [lib]
-# staticlib + cdylib -> what BoltFFI packages per platform
-crate-type = ["staticlib", "cdylib"]
+# staticlib + cdylib -> what BoltFFI packages per platform;
+# lib -> lets workspace crates and integration tests `use quran_muaalem_engine`
+crate-type = ["lib", "staticlib", "cdylib"]
 
 [dependencies]
-boltffi = "0.30.1"
+boltffi = { workspace = true }
