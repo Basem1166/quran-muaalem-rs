@@ -113,8 +113,21 @@ check_cli() {
     fi
 }
 
-check_python() {
-    echo "python"
+system_pkg_hint() { # package -> install command for this OS
+    if [ "$(host_os)" = macos ]; then echo "xcode-select --install"; else echo "sudo apt install $1 (or your distro's equivalent)"; fi
+}
+
+check_c_compiler() { # the Python wheel's C extension is built by setuptools with the system compiler
+    [ "$(host_os)" = unsupported ] && return # e.g. Windows: setuptools uses MSVC, not cc
+    command -v cc >/dev/null && ok "C compiler: $(command -v cc)" || bad "no C compiler (cc) found" "$(system_pkg_hint build-essential)"
+}
+
+check_clang() { # boltffi links the JNI desktop library with clang on Linux and macOS
+    [ "$(host_os)" = unsupported ] && return
+    command -v clang >/dev/null && ok "clang" || bad "clang not found (boltffi uses it to link the JNI library)" "$(system_pkg_hint clang)"
+}
+
+check_python_venv() {
     local py="${PYTHON:-python3}"
     if ! command -v "$py" >/dev/null; then
         bad "$py not found" "make bind-python"
@@ -123,6 +136,12 @@ check_python() {
     else
         ok "$("$py" --version) with venv"
     fi
+}
+
+check_python() {
+    echo "python"
+    check_python_venv
+    check_c_compiler
 }
 
 check_jdk() {
@@ -138,11 +157,13 @@ check_jdk() {
 check_java() {
     echo "java"
     check_jdk
+    check_clang
 }
 
 check_kotlin() {
     echo "kotlin"
     check_jdk
+    check_clang
     command -v kotlinc >/dev/null && ok "kotlinc" || bad "kotlinc not found" "make bind-kotlin"
     command -v rustup >/dev/null && ok "rustup" || bad "rustup not found (needed to add the Android Rust target)" "install Rust from https://rustup.rs"
     if [ -n "${ANDROID_NDK_HOME:-}" ] && [ -d "$ANDROID_NDK_HOME" ]; then
@@ -205,7 +226,7 @@ install_boltffi() {
 }
 
 install_python() {
-    if passes python; then
+    if passes python_venv; then
         echo "python: already available ($(${PYTHON:-python3} --version))"
         return
     fi

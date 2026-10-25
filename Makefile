@@ -45,16 +45,17 @@ install-boltffi:
 doctor:
 	@$(TOOLCHAINS) doctor
 
-doctor-%:
+# static pattern rules: plain `doctor-%:` rules are skipped for .PHONY targets
+$(addprefix doctor-,$(LANGS)): doctor-%:
 	@$(TOOLCHAINS) doctor cli $*
 
-bind-%:
+$(addprefix bind-,$(LANGS)): bind-%:
 	@$(TOOLCHAINS) install $*
 
 bind-all:
 	@for lang in $(HOST_LANGS); do $(TOOLCHAINS) install $$lang; done
 
-test-bind-%: doctor-%
+$(addprefix test-bind-,$(LANGS)): test-bind-%: doctor-%
 	@$(RUN_BINDINGS) $*
 
 test-bind-all:
