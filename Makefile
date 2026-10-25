@@ -22,7 +22,7 @@ help:
 	@echo "  make fmt                  format the workspace"
 	@echo "Bindings:"
 	@echo "  make install-boltffi      install the boltffi CLI version pinned in Cargo.toml"
-	@echo "  make doctor               check every toolchain, print fix commands"
+	@echo "  make doctor               check every toolchain this host can test, print fix commands"
 	@echo "  make bind-<lang>          install a toolchain into .toolchains/ (no sudo)"
 	@echo "  make bind-all             ... for every language this host can test"
 	@echo "  make test-bind-<lang>     doctor + pack + smoke test one binding"

@@ -3,7 +3,7 @@
 #
 #   toolchains.sh install-boltffi        install the CLI pinned by Cargo.toml ([workspace.dependencies] boltffi)
 #   toolchains.sh install <lang>|all     download a language toolchain into .toolchains/ (no sudo)
-#   toolchains.sh doctor [cli] [<lang>...] pre-flight checks; prints the fix command for anything missing
+#   toolchains.sh doctor [cli] [<lang>...] pre-flight checks (default: all this host can test); prints fixes
 #   toolchains.sh run <cmd...>           run a command with .toolchains/ on PATH (JAVA_HOME, ANDROID_NDK_HOME, ...)
 #
 # Languages: python java kotlin dart swift. Downloads support Linux and macOS (x86_64/arm64).
@@ -203,7 +203,10 @@ passes() { # quietly run check_<name>; succeed only if it reported no problems
 }
 
 doctor() {
-    [ $# -gt 0 ] || set -- cli python java kotlin dart swift
+    if [ $# -eq 0 ]; then # default: everything this machine can test (Swift needs macOS)
+        set -- cli python java kotlin dart
+        [ "$(host_os)" = macos ] && set -- "$@" swift
+    fi
     local what
     for what in "$@"; do "check_$what"; done
     if [ "$failures" -gt 0 ]; then

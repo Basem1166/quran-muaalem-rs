@@ -27,7 +27,7 @@ All commands below run from the repo root; `make help` lists them.
 
 ```sh
 make install-boltffi     # the boltffi CLI version pinned in Cargo.toml
-make doctor              # check every toolchain; prints the fix command for anything missing
+make doctor              # check every toolchain this machine can test; prints fixes
 make test-bind-all       # pack + smoke-test every binding this machine can run
 ```
 
