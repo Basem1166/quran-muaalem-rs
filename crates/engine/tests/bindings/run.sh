@@ -4,13 +4,9 @@
 # Usage: crates/engine/tests/bindings/run.sh [python] [java] [kotlin] [dart] [swift]
 #        (default: python java dart, plus swift on macOS)
 #
-# Needs the boltffi CLI (`cargo install boltffi_cli`), plus per language:
-#   python: python3 (override with PYTHON=...)
-#   java:   a JDK with JAVA_HOME set
-#   kotlin: a JDK with JAVA_HOME set, kotlinc, rustup, and the Android NDK (ANDROID_NDK_HOME)
-#   dart:   Dart SDK >= 3.10.8
-#   swift:  macOS with Xcode
-# On Windows the Python/Java C glue needs MSVC >= 17.5 (C11 atomics) or clang-cl.
+# Prefer the root Makefile: `make test-bind-<lang>` runs `make doctor-<lang>` first and puts
+# toolchains installed by `make bind-<lang>` on PATH. Requirements are listed in README.md
+# ("BoltFFI bindings"); `make doctor` checks them. Tested in CI on Linux and macOS only.
 set -euo pipefail
 
 cd "$(dirname "$0")/../.."
@@ -41,7 +37,9 @@ run_java() {
 
     local classes=dist/java-test-classes
     rm -rf "$classes"
-    javac -d "$classes" $(find dist/java -name '*.java') "$tests/java/VersionTest.java"
+    local sources=()
+    while IFS= read -r -d '' f; do sources+=("$f"); done < <(find dist/java -name '*.java' -print0)
+    javac -d "$classes" "${sources[@]}" "$tests/java/VersionTest.java"
 
     local native_dirs
     native_dirs="$(find dist/java/native -mindepth 1 -maxdepth 1 -type d | paste -sd "$classpath_sep" -)"
@@ -64,7 +62,9 @@ EOF
     boltffi pack android --release --overlay "$overlay"
 
     local jar=dist/kotlin-test.jar
-    kotlinc $(find dist/android/kotlin -name '*.kt') "$tests/kotlin/VersionTest.kt" -include-runtime -d "$jar"
+    local sources=()
+    while IFS= read -r -d '' f; do sources+=("$f"); done < <(find dist/android/kotlin -name '*.kt' -print0)
+    kotlinc "${sources[@]}" "$tests/kotlin/VersionTest.kt" -include-runtime -d "$jar"
 
     local native_dirs
     native_dirs="$(find dist/android/desktopJniLibs -mindepth 1 -maxdepth 1 -type d | paste -sd "$classpath_sep" -)"

@@ -1,5 +1,7 @@
 **/target
 **/debug
+# toolchains downloaded by `make bind-<lang>`
+.toolchains/
 # BoltFFI packaging output
 crates/engine/dist
 # binding smoke-test artifacts

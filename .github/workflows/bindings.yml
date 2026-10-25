@@ -1,7 +1,9 @@
 name: Bindings
 
-# Packs each BoltFFI binding of the engine and runs its smoke test
-# (crates/engine/tests/bindings/run.sh).
+# Packs each BoltFFI binding of the engine and runs its smoke test via the root Makefile
+# (`make test-bind-<lang>` = `make doctor-<lang>` + crates/engine/tests/bindings/run.sh).
+# Language SDKs come from the official actions/setup-* actions; `make bind-<lang>` is the
+# local equivalent, used here only where no setup action exists (kotlinc).
 on:
   push:
     branches: [main]
@@ -9,12 +11,14 @@ on:
       - "crates/engine/**"
       - "Cargo.toml"
       - "Cargo.lock"
+      - "Makefile"
       - ".github/workflows/bindings.yml"
   pull_request:
     paths:
       - "crates/engine/**"
       - "Cargo.toml"
       - "Cargo.lock"
+      - "Makefile"
       - ".github/workflows/bindings.yml"
 
 permissions:
@@ -26,7 +30,6 @@ concurrency:
 
 env:
   CARGO_TERM_COLOR: always
-  BOLTFFI_VERSION: 0.30.1
 
 jobs:
   bindings:
@@ -50,15 +53,15 @@ jobs:
         with:
           key: bindings-${{ matrix.lang }}
 
+      # The CLI version comes from Cargo.toml ([workspace.dependencies] boltffi), so bumping
+      # the dependency also changes this cache key and reinstalls the matching CLI.
       - name: Cache boltffi CLI
-        id: boltffi-cache
         uses: actions/cache@v4
         with:
           path: ~/.cargo/bin/boltffi
-          key: boltffi-cli-${{ runner.os }}-${{ runner.arch }}-${{ env.BOLTFFI_VERSION }}
+          key: boltffi-cli-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('Cargo.toml') }}
       - name: Install boltffi CLI
-        if: steps.boltffi-cache.outputs.cache-hit != 'true'
-        run: cargo install boltffi_cli --version "$BOLTFFI_VERSION" --locked
+        run: make install-boltffi
 
       - if: matrix.lang == 'python'
         uses: actions/setup-python@v5
@@ -84,4 +87,4 @@ jobs:
           sdk: stable
 
       - name: Run ${{ matrix.lang }} smoke test
-        run: bash crates/engine/tests/bindings/run.sh ${{ matrix.lang }}
+        run: make test-bind-${{ matrix.lang }}

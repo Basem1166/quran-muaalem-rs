@@ -4,9 +4,9 @@ version = 4
 
 [[package]]
 name = "boltffi"
-version = "0.30.1"
+version = "0.31.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "29056ae93df418798c11416674f675b9a39e3140cb6d12c02f0a1b32189a2125"
+checksum = "15bb38f198fcecec3a0845a01198df637bbbe21f927b642e73a54881df665c20"
 dependencies = [
  "boltffi_core",
  "boltffi_macros",
@@ -14,18 +14,18 @@ dependencies = [
 
 [[package]]
 name = "boltffi_ast"
-version = "0.30.1"
+version = "0.31.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ce8dad42dd965937fa20a52dd47eb89bcc69effe32ec4e34ed63f9ea111b7d43"
+checksum = "61e5bf26f14830edc8673d05a1e8d0bb44b6a533e6d01d99e411e02577ed6d5f"
 dependencies = [
  "serde",
 ]
 
 [[package]]
 name = "boltffi_binding"
-version = "0.30.1"
+version = "0.31.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cc67fcad39fd12068b31a6e1c3aa835a3f6d02f5e7d3c9198d4b8683ce74499a"
+checksum = "9d39b74b304ca107ea1b1ef6d2d8d7c4b69a9bad7bf206cc047dd87174d29776"
 dependencies = [
  "boltffi_ast",
  "serde",
@@ -34,9 +34,9 @@ dependencies = [
 
 [[package]]
 name = "boltffi_core"
-version = "0.30.1"
+version = "0.31.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e81fc98a47ad9414cf2b3c1345ef246ffbb8bb6c8b9f985f67790ae12f0b3755"
+checksum = "6d6ee6290de9493be873985f34baa4b75ecdede5a46be85eee28c8e058449288"
 dependencies = [
  "boltffi_macros",
  "url",
@@ -45,9 +45,9 @@ dependencies = [
 
 [[package]]
 name = "boltffi_macros"
-version = "0.30.1"
+version = "0.31.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ce67bb594b9429058abc2dc9c011918a5ad087e466477b8ea936264e798afe96"
+checksum = "e3ae23a49821e96421a1973dfdf14e298b2626fad1da355d5644dbfa8bf71bcc"
 dependencies = [
  "boltffi_ast",
  "boltffi_binding",
@@ -63,9 +63,9 @@ dependencies = [
 
 [[package]]
 name = "boltffi_scan"
-version = "0.30.1"
+version = "0.31.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "57dc4e0cedb6dbcf681ce38700203a25f5752a08e51cd390fb5ee234321bf8ac"
+checksum = "5c351cd73c32e7038e1abe3e08770618506de340fa9e5396cabe7dbce684730d"
 dependencies = [
  "boltffi_ast",
  "proc-macro2",
